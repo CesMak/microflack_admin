@@ -100,17 +100,26 @@ install/make-db-passwords.sh
 echo "source $PWD/mfvars" >> $INSTALL_PATH/.profile
 
 echo ''
-echo -e "${BLUE}Do mfenv showing environment variables${NC}"
+echo -e "${GREEN}Do mfenv showing environment variables${NC}"
 mfenv
 
-#mfclone ..
-# mfbuild all
-#
-# # run services
-# for SERVICE in $SERVICES; do
-#     mfrun $SERVICE
-# done
-#
+mfclone ..
+
+echo ''
+echo -e "${GREEN}Build all services ${NC}"
+mfbuild all
+
+# run services
+for SERVICE in $SERVICES; do
+  echo ''
+  echo -e "${BLUE}Do mfrun $SERVICE ${NC}"
+  mfrun $SERVICE
+done
+
+echo ''
+echo -e "${GREEN}Finished starting docker containers${NC}"
+docker container ls
+
 # popd
 # echo MicroFlack is now deployed!
 # echo - Run "source $INSTALL_PATH/.profile" or log back in to update your environment.

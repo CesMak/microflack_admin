@@ -86,8 +86,12 @@ if [[ "$USEENV" == "-env" ]]; then
   cat .env
 fi
 
- # in case of app not found do setup-all-in-one.sh first
- echo ''
- echo ''
- echo -e "${GREEN}Start flask app: flask run${NC}"
-flask run
+cd $INSTALL_PATH/microflack_$LOCALBUILDSERVICE
+echo ''
+echo -e "${BLUE}Do now mfdev start $LOCALBUILDSERVICE ${NC}"
+../microflack_admin/bin/mfdev start $LOCALBUILDSERVICE
+
+echo ''
+echo ''
+echo -e "${GREEN}Start flask app: flask run${NC}"
+flask run --host 0.0.0.0

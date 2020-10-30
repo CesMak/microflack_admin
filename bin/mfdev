@@ -15,7 +15,7 @@ fi
 
 ETCD=http://$MICROFLACK_IP:2379
 LB=http://$MICROFLACK_IP
-HOST=10.0.2.2  # inside a Vagrant VM, the 10.0.2.2 IP address is the host
+HOST=192.168.178.26 # inside a Vagrant VM, the 10.0.2.2 IP address is the host
 
 usage() {
     echo "mfdev start|stop <service-name> [<port> [<path>]]"
