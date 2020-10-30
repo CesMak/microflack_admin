@@ -22,4 +22,5 @@ export FLASK_APP=app.py
 # note that this is hardcoded to the Vagrant VM's IP address, so it needs to
 # be adjusted accordingly for other environments
 # if you have multiple IP addresses, just set one of them here
-export MICROFLACK_IP=192.168.33.10
+# before: 192.168.33.10
+export MICROFLACK_IP=192.168.178.26

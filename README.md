@@ -1,8 +1,18 @@
 installation instruction:
+https://www.youtube.com/watch?v=nrzLdMWTRMM
 
-1. download microflack_admin
-2. ./setup-host.sh
-3. ./setup-all-in-one.sh
+Set alias:
+alias ss_idm='cd ~/Documents/06_Software_Projects/idm; export INSTALL_PATH=$PWD; pushd $INSTALL_PATH/; export PATH=$PATH:$PWD/microflack_admin/bin; cd microflack_admin; source mfvars'
+
+* download microflack_admin in /idm
+* ss_idm
+* ./setup-host.sh
+* ./setup-all-in-one.sh
+
+# Install a service by hand
+*  2:25
+* ./createTestServic.sh
+* (do only if requirements.txt has only old versions) pip install pip-upgrader # https://stackoverflow.com/questions/24764549/upgrade-python-packages-from-requirements-txt-using-pip-command
 
 
 MicroFlack's Administration Scripts

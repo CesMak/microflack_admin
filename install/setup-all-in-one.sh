@@ -103,7 +103,7 @@ echo ''
 echo -e "${BLUE}Do mfenv showing environment variables${NC}"
 mfenv
 
-mfclone ..
+#mfclone ..
 # mfbuild all
 #
 # # run services
