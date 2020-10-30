@@ -16,11 +16,21 @@ alias ss_idm='cd ~/Documents/06_Software_Projects/idm; export INSTALL_PATH=$PWD;
 
 # Build service
 * mfbuild ui
+* mfrun tokens
 * mfbuild messages
 
 # Run service
 * mfrun ui
 * mfrun messages # --> ERROR 1045 (28000): Access denied for user 'root'@'172.17.0.1' (using password: YES)
+
+
+# Questions:
+* $(ip route get 1 | awk '{print $NF;exit}')
+  + -> gives 1000
+  + if i set it HOST_IP_ADDRESS=192. --> 0.0.0.0/stats will work
+* diffrence between HOST_IP_ADDRESS and MICROFLACK_IP
+* why is 0.0.0.0 or 192.... not available?, why is the service registry not checking that new services are available
+* problem: eventlet 0.29.1 requires dnspython<2.0.0,>=1.15.0, but you'll have dnspython 2.0.0 which is incompatible.
 
 
 MicroFlack's Administration Scripts

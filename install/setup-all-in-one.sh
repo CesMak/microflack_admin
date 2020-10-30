@@ -37,7 +37,7 @@ GITROOT=https://github.com/cesmak
 pushd $INSTALL_PATH/
 
 # environment variables
-export HOST_IP_ADDRESS=$(ip route get 1 | awk '{print $NF;exit}')
+export HOST_IP_ADDRESS=192.168.178.26  #$(ip route get 1 | awk '{print $NF;exit}')
 export SECRET_KEY=$(pwgen -1 -c -n -s 32)
 export JWT_SECRET_KEY=$(pwgen -1 -c -n -s 32)
 export PATH=$PATH:$PWD/microflack_admin/bin
