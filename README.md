@@ -11,8 +11,16 @@ alias ss_idm='cd ~/Documents/06_Software_Projects/idm; export INSTALL_PATH=$PWD;
 
 # Install a service by hand
 *  2:25
-* ./createTestServic.sh
-* (do only if requirements.txt has only old versions) pip install pip-upgrader # https://stackoverflow.com/questions/24764549/upgrade-python-packages-from-requirements-txt-using-pip-command
+* ./createTestService.sh ui -u -env
+* ./createTestService.sh messages -u -env  #fails --> cause of no service registry: OSError: [Errno 98] Address already in use
+
+# Build service
+* mfbuild ui
+* mfbuild messages
+
+# Run service
+* mfrun ui
+* mfrun messages # --> ERROR 1045 (28000): Access denied for user 'root'@'172.17.0.1' (using password: YES)
 
 
 MicroFlack's Administration Scripts

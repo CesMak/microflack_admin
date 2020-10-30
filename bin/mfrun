@@ -26,6 +26,10 @@ if [[ "$JWT_SECRET_KEY" == "" ]]; then
     echo Variable JWT_SECRET_KEY is undefined.
     exit 1
 fi
+if [[ "$INSTALL_PATH" == "" ]]; then
+    echo Variable INSTALL_PATH is undefined.
+    exit 1
+fi
 
 SERVICE=$1
 if [[ "$SERVICE" == "" ]]; then
@@ -49,12 +53,12 @@ fi
 DATABASE=
 for SVC in $SERVICES_WITH_DB; do
     if [[ "$SERVICE" == "$SVC" ]]; then
-        source ~/.mysql_passwords
+        source $INSTALL_PATH/.mysql_passwords
         VAR=$(echo ${SERVICE}_DB_PASSWORD | tr '/a-z/' '/A-Z/')
         PASSWORD=$(eval echo \$$VAR)
         DATABASE="-e DATABASE_URL=mysql+pymysql://$SERVICE:$PASSWORD@$DATABASE_SERVER/$SERVICE"
 
-        source ~/.mysql_root_password
+        source $INSTALL_PATH/.mysql_root_password
         MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -u root --protocol tcp <<EOF
 CREATE DATABASE IF NOT EXISTS $SERVICE;
 CREATE USER IF NOT EXISTS '$SERVICE'@'%' IDENTIFIED BY '$PASSWORD';
