@@ -2,7 +2,7 @@
 
 # This script generates random database passwords for all database backed services.
 
-PW_FILE=~/.mysql_passwords
+PW_FILE=$INSTALL_PATH/.mysql_passwords
 if [[ ! -f $PW_FILE ]]; then
     touch $PW_FILE
 fi

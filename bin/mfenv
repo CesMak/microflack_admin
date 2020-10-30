@@ -10,8 +10,9 @@ echo "REDIS=\"$MICROFLACK_IP:6379\""
 echo "LB=\"http://$MICROFLACK_IP\""
 echo "SECRET_KEY=\"$SECRET_KEY\""
 echo "JWT_SECRET_KEY=\"$JWT_SECRET_KEY\""
+echo "INSTALL_PATH=\"$INSTALL_PATH\""
 
-source ~/.mysql_passwords
+source $INSTALL_PATH/.mysql_passwords
 for SERVICE in $SERVICES_WITH_DB; do
     VAR=$(echo ${SERVICE}_DB_PASSWORD | tr '/a-z/' '/A-Z/')
     PASSWORD=$(eval echo \$$VAR)

@@ -1,3 +1,10 @@
+installation instruction:
+
+1. download microflack_admin
+2. ./setup-host.sh
+3. ./setup-all-in-one.sh
+
+
 MicroFlack's Administration Scripts
 ===================================
 
