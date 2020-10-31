@@ -56,7 +56,7 @@ dba27323222e        mysql:5.7                               "docker-entrypoint.s
 ## Modify ui service
 * delete all but _admin folder  
   + --otherwise you will get: ERROR 1045 (28000): Access denied for user 'root'@'172.17.0.1' (using password: YES)
-  + it is also enough to delete wheels .mysql_passwords .mysql_root_password .profile
+  + you have to delete mysql-data-dir and wheels folder!
 * ./setup-all
 * ./createTestService.sh ui -u -env
 * stop container of ui service -->
@@ -70,6 +70,7 @@ dba27323222e        mysql:5.7                               "docker-entrypoint.s
 * (env) markus@pc:~/Documents/06_Software_Projects/idm/microflack_users$ flask db upgrade  #<- creates users.sqllite !
 * exending with roomid did not work yet: sqlite3.OperationalError: no such column: users.roomid
 * simply check the users.sqllite file!
+* works now....
 
 
 ## Testing the api:
@@ -86,11 +87,212 @@ dba27323222e        mysql:5.7                               "docker-entrypoint.s
 ## Migrations
 * see: https://flask-migrate.readthedocs.io/en/latest/ Flask-Migrate uses Alembic
   + flask db init adds migrations folder!
-  + 
 * used for messages, users
 * service cannot create the db! (mysql)
 * db creation must be outside! (with admin pw happens in bash script!)
 * service can do the migration
+
+## Configure HAProxy for SSL/TLS HTTPS Certbot
+https://serversforhackers.com/c/using-ssl-certificates-with-haproxy
+see example here:https://discourse.haproxy.org/t/convert-working-nginx-to-haproxy-1-6/2770
+https://www.haproxy.com/blog/websockets-load-balancing-with-haproxy/
+https://danielparker.me/haproxy/nginx/comparison/nginx-vs-haproxy/
+
+https://www.youtube.com/watch?v=jjNNsRYjAyw
+* use haproxy as reverse proxy for ngnix
+* create A record
+* install certbot and haproxy
+* /etc/letsencrypt/live.... certivicates
+* uses also ngnix as backend
+* systemctl start haproxy
+* netstat -tnlp
+* haproxy -f /etc/haproxy/haproxy.cfg
+* curl -vv https://idgaming.de
+
+https://www.youtube.com/watch?v=8fgi2H737Y4 (good video showing also /stats)
+
+
+## Setup SSH
+* [idgaming.de-pc] sudo apt-get install openssh-server
+* [idgaming.de-pc] sudo service ssh status
+* [client/lenovoz500/remote] ssh-keygen -b 4096
+*  this generates id_rsa and id_rsa.pub
+* [idgaming.de-pc]  mkdir .ssh
+* [idgaming.de-pc]  extend authorized_keys file in .ssh folder with id_rsa.pub
+* [idgaming.de-pc] sudo chmod 700 ~/.ssh/
+* [idgaming.de-pc] sudo chmod 600 ~/.ssh/*
+* [client/lenovoz500/remote]  ssh idgadmin@idgaming.de geht
+* [client/lenovoz500/remote]  nach portfreigabe in fritzbox (22) geht nun auch: ssh idgadmin@87.163.45.201
+
+## Setup all on real server (idgaming.de)
+* make a snap (before doing all the changes!) on idgaming.de pc
+* stop supervisor, stop ngnix: stop_id (on idgaming.de pc)
+  ```
+  sudo systemctl stop nginx;
+  sudo supervisorctl stop idg;
+  ```
+* crontab:
+  + You have to renew the certificates after 90Days from letsencrypt!
+  + sudo crontab -e
+  + 30 4 1 * * sudo certbot renew --quiet (must not be changed!)
+
+* copy files:
+```
+ssh idgadmin@idgaming.de
+cd ~/
+mkdir -p idm
+cd idm
+git clone git@github.com:CesMak/microflack_admin.git
+
+```
+
+* copy files
+* copy files setup host
+* install docker run docker containers
+* instead of 192.168.... use idgaming.de
+
+
+### SSH HTTPS setup:
+* current ngnix setup:
+```
+/etc/nginx/nginx.conf
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+include /etc/nginx/modules-enabled/*.conf;
+
+events {
+	worker_connections 768;
+	# multi_accept on;
+}
+
+http {
+
+	##
+	# Basic Settings
+	##
+
+	sendfile on;
+	tcp_nopush on;
+	tcp_nodelay on;
+	keepalive_timeout 65;
+	types_hash_max_size 2048;
+	# server_tokens off;
+	client_max_body_size 5M;
+
+	# server_names_hash_bucket_size 64;
+	# server_name_in_redirect off;
+
+	include /etc/nginx/mime.types;
+	default_type application/octet-stream;
+
+	##
+	# SSL Settings
+	##
+
+	ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3; # Dropping SSLv3, ref: POODLE
+	ssl_prefer_server_ciphers on;
+
+	##
+	# Logging Settings
+	##
+
+	access_log /var/log/nginx/access.log;
+	error_log /var/log/nginx/error.log;
+
+	##
+	# Gzip Settings
+	##
+
+	gzip on;
+
+	# gzip_vary on;
+	# gzip_proxied any;
+	# gzip_comp_level 6;
+	# gzip_buffers 16 8k;
+	# gzip_http_version 1.1;
+	# gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+	##
+	# Virtual Host Configs
+	##
+
+	include /etc/nginx/conf.d/*.conf;
+	include /etc/nginx/sites-enabled/*;
+}
+
+
+#mail {
+#	# See sample authentication script at:
+#	# http://wiki.nginx.org/ImapAuthenticateWithApachePhpScript
+#
+#	# auth_http localhost/auth.php;
+#	# pop3_capabilities "TOP" "USER";
+#	# imap_capabilities "IMAP4rev1" "UIDPLUS";
+#
+#	server {
+#		listen     localhost:110;
+#		protocol   pop3;
+#		proxy      on;
+#	}
+#
+#	server {
+#		listen     localhost:143;
+#		protocol   imap;
+#		proxy      on;
+#	}
+#}
+
+with include /etc/nginx/sites-enabled/*;
+/etc/nginx/sites-enabled/idg
+	server{
+		server_name idgaming.de www.idgaming.de; # 192.168.178.29 1.2.3.4
+
+		location /static/ {
+			alias /home/idgadmin/blog/idg/static/;
+			expires 30d;
+			}		
+		location / {
+			proxy_pass http://localhost:8000;
+			include /etc/nginx/proxy_params;
+			proxy_redirect off;
+
+		}
+		location /socket.io {
+			proxy_pass   http://localhost:8000/socket.io;
+			proxy_redirect off;
+			include /etc/nginx/proxy_params;
+			proxy_http_version 1.1;
+        		# proxy_buffering off;
+       			# proxy_set_header Upgrade $http_upgrade;
+       			# proxy_set_header Connection "Upgrade";			
+			# proxy_pass   http://localhost:8000/socket.io;
+
+	      }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/idgaming.de/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/idgaming.de/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+	server{
+    if ($host = idgaming.de) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+    if ($host = www.idgaming.de) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+		listen 80;
+		server_name idgaming.de www.idgaming.de;
+    return 404; # managed by Certbot
+
+
+}
+```
 
 
 # Questions:
@@ -99,12 +301,23 @@ dba27323222e        mysql:5.7                               "docker-entrypoint.s
   + if i set it HOST_IP_ADDRESS=192. --> 0.0.0.0/stats will work
 * diffrence between HOST_IP_ADDRESS and MICROFLACK_IP
 * ERROR 1045 (28000): Access denied for user 'root'@'172.17.0.1' (using password: YES)
+  + you have to delete mysql-data-dir and wheels folder!
+  + if you delete wheels all has to be build again why?!
 * problem: eventlet 0.29.1 requires dnspython<2.0.0,>=1.15.0, but you'll have dnspython 2.0.0 which is incompatible.
 * ask question on scaling: multiple workers!!!
 * only one service can run outside docker at a time... (why?)
-
+* what type of confd version is used? 0.11.0 (2015) - can I use a newer version without any risk?
+* why did you use haproxy?
+* why do the services all use different common package within its requirements see requirements.txt of the diffrent files?
+* how to configure gunicorn for multiple workers?
+* why is socketio used so diffrently in ui? I would have used it like .... (got always problems with that usage)
 
 # TODO
+* teste die app in production mode!!! -> haProxy genauer anschauen!
+* schau dir logspout an wie man hier messages anzeigt!
+* und schau dir an wie das nun funktionieren würde den aktuellen service
+* und den aktuellen lokalen neuen service hochzuladen
+
 * How is data stored in states (in g, sessions?)
 * include rooms and broadcast
 * what is mflogs

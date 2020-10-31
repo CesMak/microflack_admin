@@ -58,7 +58,7 @@ docker run --name etcd -d --restart always -p 2379:2379 -p 2380:2380 miguelgrinb
 export ETCD=http://$HOST_IP_ADDRESS:2379
 echo export ETCD=$ETCD >> $INSTALL_PATH/.profile
 
-# install etcdtool
+# install etcdtool - service registry
 docker pull mkoppanen/etcdtool
 
 # deploy mysql
@@ -80,9 +80,17 @@ if [[ "$LOAD_BALANCER" == "traefik" ]]; then
     echo export LOAD_BALANCER=traefik >> $INSTALL_PATH/.profile
     docker run --name lb -d --restart always -p 80:80 -p 8080:8080 traefik:1.3 --etcd --etcd.endpoint="$HOST_IP_ADDRESS:2379" --web --web.address=":8080"
 else
-    # use the haproxy load balancer (recommended)
+    # use the haproxy load balancer (recommended this one is currently used!)
     echo export LOAD_BALANCER=haproxy >> $INSTALL_PATH/.profile
-    docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 miguelgrinberg/easy-lb-haproxy:latest
+    # before: docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 miguelgrinberg/easy-lb-haproxy:latest
+    # Args:
+    # HAPROXY_STATS=0 (no stats page shown!)
+    # HAPROXY_STATS_AUTH: if stats are enabled, this sets login credentials to access the stats page. (Optional, auth is disabled by default)
+    # available at: https://hub.docker.com/r/miguelgrinberg/easy-lb-haproxy
+    echo 'Installing the script the first time note that you have to:'
+    echo 'git clone git@github.com:CesMak/easy-lb-haproxy.git'
+    echo 'cd into it and do ./build.sh  then execute ./setup-all-in-one.sh again!'
+    docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 cesmak/easy-lb-haproxy:latest
 fi
 
 # download the code and build containers

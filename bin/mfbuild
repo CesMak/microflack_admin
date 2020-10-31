@@ -1,6 +1,11 @@
 #!/bin/bash -e
 
 # This script builds Docker containers for the services.
+## Setup some Color
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
 
 SERVICE=$1
 if [[ "$SERVICE" == "" ]]; then
@@ -27,6 +32,8 @@ done
 # build docker images
 for SVC in $SERVICES; do
     if [[ "$SERVICE" == "$SVC" ]] || [[ "$SERVICE" == "all" ]]; then
+      echo ''
+      echo -e "${BLUE}Do build $SVC ${NC}"
         ../microflack_$SVC/build.sh
     fi
 done
