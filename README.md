@@ -200,9 +200,12 @@ ea722f321b57        mysql:5.7                         "docker-entrypoint.s…"  
 ```
 
 * test if works on machine
-haproxy not running.... (cause confd was not executable!)
+haproxy not running.... (cause confd was not executable!) -> solved
+http://192.168.178.44:33099/ (only over ports works.... -> why?)
 problem service messages and users restarting und nur ueber port und nicht per 0.0.0.0 erreichbar!
 sudo curl -vv http://192.168.178.44:32772/
+
+alias ss_idm='cd ~/Documents/06_Software_Projects/idm; export INSTALL_PATH=$PWD; pushd $INSTALL_PATH/; export PATH=$PATH:$PWD/microflack_admin/bin; cd microflack_admin; source mfvars'
 
 
 ### SSH HTTPS setup:

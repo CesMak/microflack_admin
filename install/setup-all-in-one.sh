@@ -37,7 +37,7 @@ GITROOT=https://github.com/cesmak
 pushd $INSTALL_PATH/
 
 # environment variables
-export HOST_IP_ADDRESS=ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}'#
+export HOST_IP_ADDRESS=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
 export SECRET_KEY=$(pwgen -1 -c -n -s 32)
 export JWT_SECRET_KEY=$(pwgen -1 -c -n -s 32)
 export PATH=$PATH:$PWD/microflack_admin/bin
@@ -112,7 +112,11 @@ docker container ls
 echo ''
 echo -e "${GREEN}Install pw mysql_passwords${NC}"
 cd $INSTALL_PATH/microflack_admin
+
+set -o allexport # required such that variables are outside available!
 source mfvars
+set +o allexport
+
 install/make-db-passwords.sh
 echo "source $PWD/mfvars" >> $INSTALL_PATH/.profile
 

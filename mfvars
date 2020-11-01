@@ -22,5 +22,4 @@ export FLASK_APP=app.py
 # note that this is hardcoded to the Vagrant VM's IP address, so it needs to
 # be adjusted accordingly for other environments
 # if you have multiple IP addresses, just set one of them here
-# before: 192.168.33.10
-export MICROFLACK_IP=ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}'
+export MICROFLACK_IP=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}') # required for ubuntu 20.04
