@@ -142,14 +142,67 @@ ssh idgadmin@idgaming.de
 cd ~/
 mkdir -p idm
 cd idm
-git clone git@github.com:CesMak/microflack_admin.git
+sudo apt install git
+git clone https://github.com/CesMak/microflack_admin.git
+sudo ./setup-host.sh
 
+#install docker: https://docs.docker.com/engine/install/ubuntu
+sudo apt-get update
+sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common
+...
+
+# add docker to usergroup: add to usersgroup
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker
+docker run hello-world
+
+cd .. (go to microflack_admin package)
+grep -nr 192.168 (exchange all with 0.0.0.0 (not idgaming.de!<- this is done in haproxy config?))
+
+./setup-all-in-one.sh
+
+# until error  Error response from daemon: pull access denied for cesmak/easy-lb-haproxy
+cd ~/idm
+git clone https://github.com/CesMak/easy-lb-haproxy.git
+cd easy-lb-haproxy
+./build.sh
+
+cd microflack_admin/install/
+./setup-all-in-one.sh # (do it again)
+
+# Problem might occur:
+Do mfrun users
+ERROR 1045 (28000): Access denied for user 'root'@'172.17.0.1' (using password: YES)
+--> Solution:
+
+sudo rm -rf mysql-data-dir/
+rm -rf wheels/
+./setup-all-in-one.sh # (do it again)
+
+# if no errors occur correct output is:
+CONTAINER ID        IMAGE                             COMMAND                  CREATED              STATUS                                  PORTS                               NAMES
+2a7ff6391288        microflack_socketio:latest        "./boot.sh"              2 seconds ago        Up Less than a second                   0.0.0.0:32773->5000/tcp             socketio_2a7ff6391288
+f48d185746f3        microflack_messages:latest        "./boot.sh"              2 seconds ago        Up 1 second                             0.0.0.0:32772->5000/tcp             messages_f48d185746f3
+df89d1952cfc        microflack_tokens:latest          "./boot.sh"              3 seconds ago        Up 2 seconds                            0.0.0.0:32771->5000/tcp             tokens_df89d1952cfc
+933eff7fc1f0        microflack_users:latest           "./boot.sh"              4 seconds ago        Restarting (1) Less than a second ago                                       users_933eff7fc1f0
+8178376a1cf2        microflack_ui:latest              "./boot.sh"              4 seconds ago        Up 3 seconds                            0.0.0.0:32769->5000/tcp             ui_8178376a1cf2
+c682393ccc19        cesmak/easy-lb-haproxy:latest     "/docker-entrypoint.…"   About a minute ago   Up About a minute                       0.0.0.0:80->80/tcp                  lb
+2874bb71a3cc        redis:3.2-alpine                  "docker-entrypoint.s…"   About a minute ago   Up About a minute                       0.0.0.0:6379->6379/tcp              redis
+ea722f321b57        mysql:5.7                         "docker-entrypoint.s…"   About a minute ago   Up About a minute                       0.0.0.0:3306->3306/tcp, 33060/tcp   mysql
+8bc7c22d5088        miguelgrinberg/easy-etcd:latest   "./boot.sh"              About a minute ago   Up About a minute                       0.0.0.0:2379-2380->2379-2380/tcp    etcd
+6c27fb45deea        gliderlabs/logspout:latest        "/bin/logspout"          About a minute ago   Up About a minute                       0.0.0.0:1095->80/tcp                logspout
 ```
 
-* copy files
-* copy files setup host
-* install docker run docker containers
-* instead of 192.168.... use idgaming.de
+* test if works on machine
+haproxy not running.... (cause confd was not executable!)
+problem service messages and users restarting und nur ueber port und nicht per 0.0.0.0 erreichbar!
+sudo curl -vv http://192.168.178.44:32772/
 
 
 ### SSH HTTPS setup:

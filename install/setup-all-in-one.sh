@@ -13,7 +13,7 @@ echo -e "${GREEN}Docker Containers:${NC}"
 docker container ls
 
 echo ''
-echo 'Stop all Docker Containers'
+echo -e "${RED}Stop all Docker Containers${NC}"
 if [[ ! "$(docker ps -aq)" == "" ]]; then
 docker stop $(docker ps -aq)
 fi
@@ -37,7 +37,7 @@ GITROOT=https://github.com/cesmak
 pushd $INSTALL_PATH/
 
 # environment variables
-export HOST_IP_ADDRESS=192.168.178.26  #$(ip route get 1 | awk '{print $NF;exit}')
+export HOST_IP_ADDRESS=ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}'#
 export SECRET_KEY=$(pwgen -1 -c -n -s 32)
 export JWT_SECRET_KEY=$(pwgen -1 -c -n -s 32)
 export PATH=$PATH:$PWD/microflack_admin/bin
@@ -87,9 +87,18 @@ else
     # HAPROXY_STATS=0 (no stats page shown!)
     # HAPROXY_STATS_AUTH: if stats are enabled, this sets login credentials to access the stats page. (Optional, auth is disabled by default)
     # available at: https://hub.docker.com/r/miguelgrinberg/easy-lb-haproxy
-    echo 'Installing the script the first time note that you have to:'
-    echo 'git clone git@github.com:CesMak/easy-lb-haproxy.git'
-    echo 'cd into it and do ./build.sh  then execute ./setup-all-in-one.sh again!'
+    if [ -d "$INSTALL_PATH/easy-lb-haproxy" ]
+    then
+        echo -e "easy-lb-haproxy ${GREEN} exists. ${NC}"
+    else
+        echo ""
+        echo -e "easy-lb-haproxy ${RED} does not exist. -> I install it ${NC}"
+        git clone https://github.com/CesMak/easy-lb-haproxy.git
+        cd $INSTALL_PATH/easy-lb-haproxy
+        ./build.sh
+    fi
+    echo ""
+    echo -e "RUN easy-lb-haproxy NOW:"
     docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 cesmak/easy-lb-haproxy:latest
 fi
 
@@ -102,15 +111,17 @@ docker container ls
 
 echo ''
 echo -e "${GREEN}Install pw mysql_passwords${NC}"
-cd microflack_admin
+cd $INSTALL_PATH/microflack_admin
 source mfvars
 install/make-db-passwords.sh
 echo "source $PWD/mfvars" >> $INSTALL_PATH/.profile
 
 echo ''
-echo -e "${GREEN}Do mfenv showing environment variables${NC}"
+echo -e "${GREEN}Do mfenv showing environment variables${BLUE}"
 mfenv
 
+echo ''
+echo -e "${GREEN}Clone services now ${NC}"
 mfclone ..
 
 echo ''

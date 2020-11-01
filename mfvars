@@ -23,4 +23,4 @@ export FLASK_APP=app.py
 # be adjusted accordingly for other environments
 # if you have multiple IP addresses, just set one of them here
 # before: 192.168.33.10
-export MICROFLACK_IP=192.168.178.26
+export MICROFLACK_IP=ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}'
