@@ -142,7 +142,7 @@ ssh idgadmin@idgaming.de
 mkdir -p ~/idm && cd "$_"
 sudo apt install git
 git clone https://github.com/CesMak/microflack_admin.git
-sudo ./setup-host.sh
+sudo ./microflack_admin/install/setup-host
 
 #install docker: https://docs.docker.com/engine/install/ubuntu
 sudo apt-get update
@@ -160,7 +160,8 @@ sudo usermod -aG docker $USER
 newgrp docker
 docker run hello-world
 
-./setup-all-in-one.sh
+cd microflack_admin/install
+sudo ./setup-all-in-one.sh
 
 if messages and users service keeps restarting (see docker container ls)
 you need to sudo ufw disable

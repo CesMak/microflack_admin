@@ -118,8 +118,16 @@ else
     if [[ "$HTTPS_SERVERNAME" == "NOT_USE" ]]; then
           docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 cesmak/easy-lb-haproxy:latest
     else
-          docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 HAPROXY_SERVERNAME=idgaming.de cesmak/easy-lb-haproxy:latest
+          docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 -e HAPROXY_SERVERNAME=idgaming.de cesmak/easy-lb-haproxy:latest
     fi
+
+    echo ""
+    echo ""
+    echo "${GREEN} This is your final haproxy.cfg file:${NC}"
+    sleep 0.6
+    docker exec -it lb sed -i '/^[[:space:]]*$/d' /usr/local/etc/haproxy/haproxy.cfg
+    docker exec -it lb cat /usr/local/etc/haproxy/haproxy.cfg
+
 fi
 
 # download the code and build containers
