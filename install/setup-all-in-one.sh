@@ -123,7 +123,7 @@ else
 
     echo ""
     echo ""
-    echo "${GREEN} This is your final haproxy.cfg file:${NC}"
+    echo -e "${GREEN} This is your final haproxy.cfg file:${NC}"
     sleep 0.6
     docker exec -it lb sed -i '/^[[:space:]]*$/d' /usr/local/etc/haproxy/haproxy.cfg
     docker exec -it lb cat /usr/local/etc/haproxy/haproxy.cfg
@@ -171,7 +171,12 @@ echo ''
 echo -e "${GREEN}Finished starting docker containers${NC}"
 docker container ls
 
-# popd
+# TODO you might use ./rebuild inside easy-lb-haproxy  
+
+popd
+
+# use mflogs to show all the logs of the docker containers
+
 # echo MicroFlack is now deployed!
 # echo - Run "source $INSTALL_PATH/.profile" or log back in to update your environment.
 # echo - You may need some variables from $INSTALL_PATH/.profile if you intend to run services in another host.

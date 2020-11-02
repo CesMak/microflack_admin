@@ -173,9 +173,24 @@ you need to sudo ufw disable
   + sudo crontab -e
   + 30 4 1 * * sudo certbot renew --quiet (must not be changed!)
 
+# TODO sending a message is not working in https mode!
+-> why?
+-> registry works
+-> cause of socketio!!!!????
+-> Firefox can’t establish a connection to the server at wss://idgaming.de/socket.io/?EIO=3&transport=websocket&sid=7ab331a3a0804bf29a93cca98c31282f.
+to solve see: https://gist.github.com/Philmod/21b7c8fbd5a2bc20987141bc99966951
+see here::: HAPROXY AND WEBSOCKETS: https://www.haproxy.com/blog/websockets-load-balancing-with-haproxy/
+see here::: u have to use cookies... ? https://stackoverflow.com/questions/8149038/can-i-have-sticky-sessions-with-haproxy-and-socket-io-with-authentication
+
+02.11.2020
+- Das komische mit https und auf https://idgaming.de
+- socketio scheint teilweise zu funktionieren...
+- die namen werden richtig upgadated auf bildschirm1 aber wenn man eine nachricht schickt dann kommt sie nicht an.
+- man sieht jedoch auf bildschirm1 eine nachricht reinpoppen und auch die namen updaten wenn sich einer von bilschrirm2 mit http anmeldet und nachrichten schickt!
+- liegt an message queue? I need cookies in my haproxy config?
+
 * test if works on machine
 sudo curl -vv 0.0.0.0  -> worked
-
 
 * include https settings!
 * Config was not there anymore..... settings is build after first calling the site in browser? It takes some time?
