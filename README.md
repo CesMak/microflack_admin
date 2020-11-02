@@ -189,6 +189,8 @@ see here::: u have to use cookies... ? https://stackoverflow.com/questions/81490
 - man sieht jedoch auf bildschirm1 eine nachricht reinpoppen und auch die namen updaten wenn sich einer von bilschrirm2 mit http anmeldet und nachrichten schickt!
 - liegt an message queue? I need cookies in my haproxy config?
 
+- TODO teste mit socketio 2.3.0 //cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.min.js
+
 * test if works on machine
 sudo curl -vv 0.0.0.0  -> worked
 
