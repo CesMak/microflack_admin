@@ -124,6 +124,8 @@ https://www.youtube.com/watch?v=8fgi2H737Y4 (good video showing also /stats)
 * [client/lenovoz500/remote]  ssh idgadmin@idgaming.de geht
 * [client/lenovoz500/remote]  nach portfreigabe in fritzbox (22) geht nun auch: ssh idgadmin@87.163.45.201
 
+
+
 ## Setup all on real server (idgaming.de)
 * make a snap (before doing all the changes!) on idgaming.de pc
 * stop supervisor, stop ngnix: stop_id (on idgaming.de pc)
@@ -131,17 +133,13 @@ https://www.youtube.com/watch?v=8fgi2H737Y4 (good video showing also /stats)
   sudo systemctl stop nginx;
   sudo supervisorctl stop idg;
   ```
-* crontab:
-  + You have to renew the certificates after 90Days from letsencrypt!
-  + sudo crontab -e
-  + 30 4 1 * * sudo certbot renew --quiet (must not be changed!)
+* sudo ufw disable
+* sudo ufw status
 
 * copy files:
 ```
 ssh idgadmin@idgaming.de
-cd ~/
-mkdir -p idm
-cd idm
+mkdir -p ~/idm && cd "$_"
 sudo apt install git
 git clone https://github.com/CesMak/microflack_admin.git
 sudo ./setup-host.sh
@@ -162,51 +160,99 @@ sudo usermod -aG docker $USER
 newgrp docker
 docker run hello-world
 
-cd .. (go to microflack_admin package)
-grep -nr 192.168 (exchange all with 0.0.0.0 (not idgaming.de!<- this is done in haproxy config?))
-
 ./setup-all-in-one.sh
 
-# until error  Error response from daemon: pull access denied for cesmak/easy-lb-haproxy
-cd ~/idm
-git clone https://github.com/CesMak/easy-lb-haproxy.git
-cd easy-lb-haproxy
-./build.sh
-
-cd microflack_admin/install/
-./setup-all-in-one.sh # (do it again)
-
-# Problem might occur:
-Do mfrun users
-ERROR 1045 (28000): Access denied for user 'root'@'172.17.0.1' (using password: YES)
---> Solution:
-
-sudo rm -rf mysql-data-dir/
-rm -rf wheels/
-./setup-all-in-one.sh # (do it again)
-
-# if no errors occur correct output is:
-CONTAINER ID        IMAGE                             COMMAND                  CREATED              STATUS                                  PORTS                               NAMES
-2a7ff6391288        microflack_socketio:latest        "./boot.sh"              2 seconds ago        Up Less than a second                   0.0.0.0:32773->5000/tcp             socketio_2a7ff6391288
-f48d185746f3        microflack_messages:latest        "./boot.sh"              2 seconds ago        Up 1 second                             0.0.0.0:32772->5000/tcp             messages_f48d185746f3
-df89d1952cfc        microflack_tokens:latest          "./boot.sh"              3 seconds ago        Up 2 seconds                            0.0.0.0:32771->5000/tcp             tokens_df89d1952cfc
-933eff7fc1f0        microflack_users:latest           "./boot.sh"              4 seconds ago        Restarting (1) Less than a second ago                                       users_933eff7fc1f0
-8178376a1cf2        microflack_ui:latest              "./boot.sh"              4 seconds ago        Up 3 seconds                            0.0.0.0:32769->5000/tcp             ui_8178376a1cf2
-c682393ccc19        cesmak/easy-lb-haproxy:latest     "/docker-entrypoint.…"   About a minute ago   Up About a minute                       0.0.0.0:80->80/tcp                  lb
-2874bb71a3cc        redis:3.2-alpine                  "docker-entrypoint.s…"   About a minute ago   Up About a minute                       0.0.0.0:6379->6379/tcp              redis
-ea722f321b57        mysql:5.7                         "docker-entrypoint.s…"   About a minute ago   Up About a minute                       0.0.0.0:3306->3306/tcp, 33060/tcp   mysql
-8bc7c22d5088        miguelgrinberg/easy-etcd:latest   "./boot.sh"              About a minute ago   Up About a minute                       0.0.0.0:2379-2380->2379-2380/tcp    etcd
-6c27fb45deea        gliderlabs/logspout:latest        "/bin/logspout"          About a minute ago   Up About a minute                       0.0.0.0:1095->80/tcp                logspout
+if messages and users service keeps restarting (see docker container ls)
+you need to sudo ufw disable
 ```
 
+# TODO HOW TO RENEW SSL CERTIFICATE??? inside docker?
+* crontab:
+  + You have to renew the certificates after 90Days from letsencrypt!
+  + sudo crontab -e
+  + 30 4 1 * * sudo certbot renew --quiet (must not be changed!)
+
 * test if works on machine
-haproxy not running.... (cause confd was not executable!) -> solved
-http://192.168.178.44:33099/ (only over ports works.... -> why?)
-problem service messages and users restarting und nur ueber port und nicht per 0.0.0.0 erreichbar!
-sudo curl -vv http://192.168.178.44:32772/
+sudo curl -vv 0.0.0.0  -> worked
 
-alias ss_idm='cd ~/Documents/06_Software_Projects/idm; export INSTALL_PATH=$PWD; pushd $INSTALL_PATH/; export PATH=$PATH:$PWD/microflack_admin/bin; cd microflack_admin; source mfvars'
 
+* include https settings!
+* Config was not there anymore..... settings is build after first calling the site in browser? It takes some time?
+* Its cause of not using miguelgrinbergs package?
+
+-- changed haproxy settings see inside haproxy docker container:  
+
+- docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 cesmak/easy-lb-haproxy:latest
+- docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 miguelgrinberg/easy-lb-haproxy:latest
+- docker exec -it lb ls /usr/local/etc/haproxy
+- docker exec -it lb cat /usr/local/etc/haproxy/haproxy.cfg
+
+* add following line on my z500
+bind *:443 ssl crt /etc/letsencrypt/live/idgaming.de/all.pem ## --> no must be inside docker! /etc/haproxy/certs/idgaming.de/all.pem
+http-request redirect scheme htpps unless {ssl_fc}
+* crownjob must be also inside docker!
+
+* then delete docker container and do
+docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 cesmak/easy-lb-haproxy:latest
+* check ./mflogs
+lb|2020-11-01T19:48:34Z 6468f9389e30 ./confd[163]: INFO Backend source(s) set to http://192.168.178.26:2379
+lb|2020-11-01T19:48:34Z 6468f9389e30 ./confd[163]: INFO Target config /usr/local/etc/haproxy/haproxy.cfg out of sync
+lb|2020-11-01T19:48:34Z 6468f9389e30 ./confd[163]: ERROR "global\n    log /dev/log    local0\n    log /dev/log    local1 notice\n\ndefaults\n    log    global\n    mode    http\n>
+lb|2020-11-01T19:48:34Z 6468f9389e30 ./confd[163]: ERROR Config check failed: exit status 1
+no haproxy.cfg file is created!!!
+
+* delete this line again
+* build again
+* stop and delte lb
+* docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 cesmak/easy-lb-haproxy:latest
+* -> site works again .cfg file is created!
+--> this means it is not due to haproxy 2.2.4 or confd file!
+
+192.168.178.44
+
+Installation - Links:
+https://www.youtube.com/watch?v=cBLYQ8bbe7c
+https://www.ssllabs.com/ssltest
+https://ssl-config.mozilla.org/#server=haproxy&version=2.1&config=intermediate&openssl=1.1.1d&guideline=5.6
+
+https://www.youtube.com/watch?v=tgvuQM0qgCE
+https://certbot.eff.org/lets-encrypt/ubuntufocal-haproxy
+
+* teste alles auf idgaming.de pc:
+* sudo ufw diable
+* stop_id
+* idgaming.de geht nicht wenn in mfvars und in HOST_IP_ADDRESS
+* copy all.pem inside docker container
+* sobald bind :443 (auch ohne idgaming.de) -> haproxy.cfg not build anymore....
+
+* haproxy is build like this:
+./build.sh
+  -> builds Dockerfile
+    -> [Dockerfile] copys etc. and starts ./boot.sh(inside the docker image!)
+    -> [boot.sh] starts watcher.sh uses haproxy.toml  
+
+* nutze erstmal nicht lb
+* dann muss man ui starten mit 192.168.178.44:36843
+* ./mfkill all other services but ui
+docker container ls
+CONTAINER ID        IMAGE                             COMMAND                  CREATED             STATUS              PORTS                               NAMES
+7c9a9aca6338        microflack_ui:latest              "./boot.sh"              3 seconds ago       Up 3 seconds        0.0.0.0:36843->5000/tcp             ui_7c9a9aca6338
+62ff9353f334        redis:3.2-alpine                  "docker-entrypoint.s…"   2 hours ago         Up 2 hours          0.0.0.0:6379->6379/tcp              redis
+bc48fe408260        mysql:5.7                         "docker-entrypoint.s…"   2 hours ago         Up 2 hours          0.0.0.0:3306->3306/tcp, 33060/tcp   mysql
+29e289ed8bdc        miguelgrinberg/easy-etcd:latest   "./boot.sh"              2 hours ago         Up 2 hours          0.0.0.0:2379-2380->2379-2380/tcp    etcd
+a26d31c2c483        gliderlabs/logspout:latest        "/bin/logspout"          2 hours ago         Up 2 hours          0.0.0.0:1095->80/tcp                logspout
+
+* Check the ui docker container:  docker exec -it ui_7c9a9aca6338 cat app.py
+* docker exec -it ui_7c9a9aca6338 ls
+LICENSE           app.py            requirements.txt  wheels
+README.md         boot.sh           static
+__pycache__       config.py         templates
+
+
+HAPROXY_USE_SSL
+HAPROXY_SERVERNAME
+docker exec -it lb sed -i '/^[[:space:]]*$/d' /usr/local/etc/haproxy/haproxy.cfg
+redirect scheme https code 301 if !{ ssl_fc }
 
 ### SSH HTTPS setup:
 * current ngnix setup:
@@ -379,6 +425,7 @@ with include /etc/nginx/sites-enabled/*;
 * what is mflogs
 * how works mfupgrade
 * .travis.yml must be updated!!!
+* AT WHAT TIME IS THE haproxy.cfg file created how to extend it for ssl? https?
 
 
 MicroFlack's Administration Scripts

@@ -9,6 +9,9 @@ NC='\033[0m' # No Color
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 
+HTTPS_SERVERNAME=idgaming.de # set to NOT_USE if you do not want to use it
+
+# to delete all docker containers use: docker rmi -f $(docker images -a -q)
 echo -e "${GREEN}Docker Containers:${NC}"
 docker container ls
 
@@ -82,11 +85,13 @@ if [[ "$LOAD_BALANCER" == "traefik" ]]; then
 else
     # use the haproxy load balancer (recommended this one is currently used!)
     echo export LOAD_BALANCER=haproxy >> $INSTALL_PATH/.profile
-    # before: docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 miguelgrinberg/easy-lb-haproxy:latest
+    #before: docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 miguelgrinberg/easy-lb-haproxy:latest
     # Args:
-    # HAPROXY_STATS=0 (no stats page shown!)
+    # HAPROXY_STATS=1 (stats page shown!)
     # HAPROXY_STATS_AUTH: if stats are enabled, this sets login credentials to access the stats page. (Optional, auth is disabled by default)
+    # HAPROXY_SERVERNAME=idgaming.de #if you want to use ssl etc. in this case you need an all.pem file in your git repro.
     # available at: https://hub.docker.com/r/miguelgrinberg/easy-lb-haproxy
+
     if [ -d "$INSTALL_PATH/easy-lb-haproxy" ]
     then
         echo -e "easy-lb-haproxy ${GREEN} exists. ${NC}"
@@ -95,11 +100,26 @@ else
         echo -e "easy-lb-haproxy ${RED} does not exist. -> I install it ${NC}"
         git clone https://github.com/CesMak/easy-lb-haproxy.git
         cd $INSTALL_PATH/easy-lb-haproxy
-        ./build.sh
+
+        #copy your all.pem file!
+        # use certbot and letsencrypt first to generate your pem files
+        # see: https://certbot.eff.org/lets-encrypt/ubuntufocal-haproxy
+
+        if [[ "$HTTPS_SERVERNAME" == "NOT_USE" ]]; then
+              echo "....HTTPS_SERVERNAME is ${RED}not${NC} used."
+        else
+          sudo cat /etc/letsencrypt/live/idgaming.de/cert.pem /etc/letsencrypt/live/idgaming.de/privkey.pem > "$INSTALL_PATH/easy-lb-haproxy"/all.pem
+          ./build.sh
+          rm "$INSTALL_PATH/easy-lb-haproxy"/all.pem
+        fi
     fi
     echo ""
     echo -e "RUN easy-lb-haproxy NOW:"
-    docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 cesmak/easy-lb-haproxy:latest
+    if [[ "$HTTPS_SERVERNAME" == "NOT_USE" ]]; then
+          docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 cesmak/easy-lb-haproxy:latest
+    else
+          docker run --name lb -d --restart always -p 80:80 -e ETCD_PEERS=$ETCD -e HAPROXY_STATS=1 HAPROXY_SERVERNAME=idgaming.de cesmak/easy-lb-haproxy:latest
+    fi
 fi
 
 # download the code and build containers
