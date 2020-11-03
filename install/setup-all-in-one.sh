@@ -167,11 +167,14 @@ for SERVICE in $SERVICES; do
   mfrun $SERVICE
 done
 
+# TODO you might use ./rebuild inside easy-lb-haproxy
+cd $INSTALL_PATH/easy-lb-haproxy
+./rebuild.sh
+
 echo ''
 echo -e "${GREEN}Finished starting docker containers${NC}"
 docker container ls
 
-# TODO you might use ./rebuild inside easy-lb-haproxy  
 
 popd
 

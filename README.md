@@ -161,13 +161,15 @@ newgrp docker
 docker run hello-world
 
 cd microflack_admin/install
-sudo ./setup-all-in-one.sh
+stop_id
+./setup-all-in-one.sh
 
 if messages and users service keeps restarting (see docker container ls)
 you need to sudo ufw disable
 ```
 
 # TODO HOW TO RENEW SSL CERTIFICATE??? inside docker?
+-> muss ich den lb lokal installieren um das hinzubekommen? nicht innerhalb von docker?
 * crontab:
   + You have to renew the certificates after 90Days from letsencrypt!
   + sudo crontab -e
@@ -188,8 +190,13 @@ see here::: u have to use cookies... ? https://stackoverflow.com/questions/81490
 - die namen werden richtig upgadated auf bildschirm1 aber wenn man eine nachricht schickt dann kommt sie nicht an.
 - man sieht jedoch auf bildschirm1 eine nachricht reinpoppen und auch die namen updaten wenn sich einer von bilschrirm2 mit http anmeldet und nachrichten schickt!
 - liegt an message queue? I need cookies in my haproxy config?
+- Fehler hier dokumentiert! : https://github.com/socketio/socket.io/issues/1942 (**TODO**)
+- see also https://github.com/miguelgrinberg/microflack_admin/issues/6
+```
+The reason the connection still works even with this error is that socket.io is falling back to AJAX, which is not optimal and you should fix your server configuration.
+```
 
-- TODO teste mit socketio 2.3.0 //cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.min.js
+- **TODO** teste mit socketio 2.3.0 //cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.min.js
 
 * test if works on machine
 sudo curl -vv 0.0.0.0  -> worked
@@ -227,6 +234,22 @@ no haproxy.cfg file is created!!!
 --> this means it is not due to haproxy 2.2.4 or confd file!
 
 192.168.178.44
+
+
+In the **mikroflack_socketio->boot.sh** package I changed:
+
+```
+exec gunicorn -b 0.0.0.0:5000 -k eventlet --access-logfile - --error-logfile - app:app
+```
+
+to
+
+```
+exec gunicorn -b 0.0.0.0:5000 -k eventlet --access-logfile - --log-level debug --error-logfile gunicorn_error.log app:app
+```
+
+that gave me:
+
 
 Installation - Links:
 https://www.youtube.com/watch?v=cBLYQ8bbe7c
