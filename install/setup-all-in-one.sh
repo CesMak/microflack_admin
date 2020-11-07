@@ -177,7 +177,8 @@ if [[ "$HTTPS_SERVERNAME" == "NOT_USE" ]]; then
 else
   echo "Rebuild.... lb"
   cd $INSTALL_PATH/easy-lb-haproxy
-  ./rebuild.sh
+  chmod +x rebuild
+  ./rebuild
 fi
 
 
