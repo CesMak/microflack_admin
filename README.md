@@ -1,7 +1,10 @@
-installation instruction:
+## Done
+07.11.2020  changing betweeen https and local mode works with NOT USE command
+
+
+## References:
 https://www.youtube.com/watch?v=nrzLdMWTRMM 2:30 (intresting),  2:01 (users service - migration)
 https://www.youtube.com/watch?v=tdIIJuPh3SI -->  Flack at scale
-
 
 Set alias:
 alias ss_idm='cd ~/Documents/06_Software_Projects/idm; export INSTALL_PATH=$PWD; pushd $INSTALL_PATH/; export PATH=$PATH:$PWD/microflack_admin/bin; cd microflack_admin; source mfvars'
@@ -136,7 +139,7 @@ https://www.youtube.com/watch?v=8fgi2H737Y4 (good video showing also /stats)
 * sudo ufw disable
 * sudo ufw status
 
-* copy files:
+* copy files: (change beteween local mode and https mode!)
 ```
 ssh idgadmin@idgaming.de
 mkdir -p ~/idm && cd "$_"
@@ -174,6 +177,22 @@ you need to sudo ufw disable
   + You have to renew the certificates after 90Days from letsencrypt!
   + sudo crontab -e
   + 30 4 1 * * sudo certbot renew --quiet (must not be changed!)
+
+## TODO  Error 06.11.2020 mysql
+- seems like I have 2 pw a root and a localhost? mysql user pw....
+docker exec -it mysql mysql -u root -p
+Enter password:
+ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)
+
+#TODO change without problems between idgaming and not ! see problem in socketio!!!
+
+
+## CD INTO Docker:
+docker exec -it socketio_47d330258694 sh
+the environ variable contains inside docker:
+docker exec -it socketio_47d330258694 python test.py
+environ({'PATH': '/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin', 'HOSTNAME': '47d330258694', 'TERM': 'xterm', 'SERVICE_NAME': 'socketio', 'LB': 'http://192.168.178.26', 'JWT_SECRET_KEY': 'J9qQWkhHiaJ721YCkYSRer7jUdD2poC3', 'LB_ALGORITHM': 'source', 'ETCD': 'http://192.168.178.26:2379', 'REDIS': '192.168.178.26:6379', 'LOAD_BALANCER': 'haproxy', 'SECRET_KEY': 'xohmDLNsmDMjoWcqEH2UxWfm8zH0YGul', 'PYTHONUNBUFFERED': '1', 'HOST_IP_ADDRESS': '192.168.178.26', 'SERVICE_URL': '/socket.io', 'LANG': 'C.UTF-8', 'GPG_KEY': '0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D', 'PYTHON_VERSION': '3.6.12', 'PYTHON_PIP_VERSION': '20.2.4', 'PYTHON_GET_PIP_URL': 'https://github.com/pypa/get-pip/raw/8283828b8fd6f1783daf55a765384e6d8d2c5014/get-pip.py', 'PYTHON_GET_PIP_SHA256': '2250ab0a7e70f6fd22b955493f7f5cf1ea53e70b584a84a32573644a045b4bfb', 'SERVICE_VERSION': '1-8-g59cfeaa', 'HOME': '/root'})
+
 
 # TODO sending a message is not working in https mode!
 -> why?
@@ -467,6 +486,20 @@ with include /etc/nginx/sites-enabled/*;
 * how works mfupgrade
 * .travis.yml must be updated!!!
 * AT WHAT TIME IS THE haproxy.cfg file created how to extend it for ssl? https?
+
+
+
+In case you get:
+```
+Do mfrun users
+ERROR 2013 (HY000): Lost connection to MySQL server at 'reading initial communication packet', system error: 22
+
+# or
+Do mfrun users
+ERROR 1045 (28000): Access denied for user 'root'@'172.17.0.1' (using password: YES)
+```
+
+just redo ./mfrun users, ./mfrun messages
 
 
 MicroFlack's Administration Scripts

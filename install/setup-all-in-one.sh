@@ -9,7 +9,7 @@ NC='\033[0m' # No Color
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 
-HTTPS_SERVERNAME=idgaming.de # set to NOT_USE if you do not want to use it
+HTTPS_SERVERNAME=NOT_USE # set to NOT_USE if you do not want to use it alternative set to idgaming.de
 
 # to delete all docker containers use: docker rmi -f $(docker images -a -q)
 echo -e "${GREEN}Docker Containers:${NC}"
@@ -44,11 +44,13 @@ export HOST_IP_ADDRESS=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a,"
 export SECRET_KEY=$(pwgen -1 -c -n -s 32)
 export JWT_SECRET_KEY=$(pwgen -1 -c -n -s 32)
 export PATH=$PATH:$PWD/microflack_admin/bin
+export HTTPS_SERVERNAME=$HTTPS_SERVERNAME
 echo export INSTALL_PATH=$INSTALL_PATH >> $INSTALL_PATH/.profile
 echo export HOST_IP_ADDRESS=$HOST_IP_ADDRESS >> $INSTALL_PATH/.profile
 echo export SECRET_KEY=$SECRET_KEY >> $INSTALL_PATH/.profile
 echo export JWT_SECRET_KEY=$JWT_SECRET_KEY >> $INSTALL_PATH/.profile
 echo export PATH=\$PATH:$PWD/microflack_admin/bin >> $INSTALL_PATH/.profile
+echo export HTTPS_SERVERNAME=$HTTPS_SERVERNAME >> $INSTALL_PATH/.profile
 
 echo ''
 echo -e "${GREEN}Install public Docker containers:${NC}"
@@ -127,7 +129,6 @@ else
     sleep 0.6
     docker exec -it lb sed -i '/^[[:space:]]*$/d' /usr/local/etc/haproxy/haproxy.cfg
     docker exec -it lb cat /usr/local/etc/haproxy/haproxy.cfg
-
 fi
 
 # download the code and build containers
@@ -160,6 +161,9 @@ echo ''
 echo -e "${GREEN}Build all services ${NC}"
 mfbuild all
 
+
+sleep 2
+
 # run services
 for SERVICE in $SERVICES; do
   echo ''
@@ -168,13 +172,18 @@ for SERVICE in $SERVICES; do
 done
 
 # TODO you might use ./rebuild inside easy-lb-haproxy
-cd $INSTALL_PATH/easy-lb-haproxy
-./rebuild.sh
+if [[ "$HTTPS_SERVERNAME" == "NOT_USE" ]]; then
+      echo "do not rebuild the load balancer to register all the server services correctly cause LOCAL MODE (NOT HTTPS)"
+else
+  echo "Rebuild.... lb"
+  cd $INSTALL_PATH/easy-lb-haproxy
+  ./rebuild.sh
+fi
+
 
 echo ''
 echo -e "${GREEN}Finished starting docker containers${NC}"
 docker container ls
-
 
 popd
 
