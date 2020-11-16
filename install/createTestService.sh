@@ -94,4 +94,5 @@ echo -e "${BLUE}Do now mfdev start $LOCALBUILDSERVICE ${NC}"
 echo ''
 echo ''
 echo -e "${GREEN}Start flask app: flask run${NC}"
+export FLASK_DEBUG=1
 flask run --host 0.0.0.0
