@@ -1,6 +1,15 @@
 ## Done
 07.11.2020  changing betweeen https and local mode works with NOT USE command
 
+## TODO
+* include rooms (locally on this pc)
+ + see under workflow for more info
+* test local mfdev mfenv workflow as well as mfupgrade
+* test migration
+* solve db error (root localhost user)
+* test if contab works to renewe certificates inside docker?
+* test why not possible to run without internet connection (fully locally? cause works over network!)
+
 
 ## References:
 https://www.youtube.com/watch?v=nrzLdMWTRMM 2:30 (intresting),  2:01 (users service - migration)
@@ -86,6 +95,7 @@ dba27323222e        mysql:5.7                               "docker-entrypoint.s
 * login (user service)   -> (token service gets request with username and pw -> asks user service if ok before gives out the token)  -> mark user as active (shows up on the right bar).
 * /api/users/me endpoint to validate username and password and return user information
 * register (POST) -> no token needed.
+* 
 
 ## Migrations
 * see: https://flask-migrate.readthedocs.io/en/latest/ Flask-Migrate uses Alembic
@@ -184,7 +194,17 @@ docker exec -it mysql mysql -u root -p
 Enter password:
 ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)
 
-#TODO change without problems between idgaming and not ! see problem in socketio!!!
+mflogs shows: pymysql.err.OperationalError: (1045, "Access denied for user 'users'@'172.17.0.1' (using password: YES)")
+users_1bdc1fdc743f|sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) (1045, "Access denied for user 'users'@'172.17.0.1' (using password: YES)")
+users_1bdc1fdc743f|(Background on this error at: http://sqlalche.me/e/13/e3q8)
+users_1bdc1fdc743f|USERS DB:  mysql+pymysql://users:lJPq89NCbm1K4Cpc@192.168.178.26:3306/users
+
+13.11.2020
+- this works: docker exec -it mysql mysql -u root -p
+
+- This must be in oneLINE::::: (inside mfrun otherwise access error!)
+MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -u root --protocol tcp <<EOF
+
 
 
 ## CD INTO Docker:

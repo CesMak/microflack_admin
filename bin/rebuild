@@ -1,0 +1,22 @@
+#!/bin/bash -e
+
+# This script is used to test the socketio server
+SERVICE=$1
+
+source ../../.profile
+
+cd $INSTALL_PATH/microflack_admin/bin
+# uncomment if not running:
+#./mfkill $SERVICE
+docker container ls
+
+cd $INSTALL_PATH/microflack_$SERVICE
+./build.sh
+
+echo "start again:"
+cd $INSTALL_PATH/microflack_admin/bin
+./mfrun $SERVICE
+
+sleep 5
+docker container ls
+#docker exec -it socketio_47d330258694 sh

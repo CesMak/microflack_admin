@@ -1,7 +1,6 @@
 #!/bin/bash -e
 
 # This script starts a container for a microservice.
-
 if [[ "$HOST_IP_ADDRESS" == "" ]]; then
     echo Variable HOST_IP_ADDRESS is undefined.
     exit 1
@@ -35,9 +34,9 @@ if [[ "$HTTPS_SERVERNAME" == "" ]]; then
     exit 1
 fi
 
+INPUTSERVICE=$1
 
-SERVICE=$1
-if [[ "$SERVICE" == "" ]]; then
+if [[ "$INPUTSERVICE" == "" ]]; then
     echo "Usage: mfrun <service-name> [<image-tag>] [-- <custom-docker-run-args>]"
     exit 1
 fi
@@ -55,6 +54,17 @@ if [[ "$1" == "--" ]]; then
     shift
 fi
 
+if [[ "$INPUTSERVICE" == "all" ]]; then
+  echo I start now all services:
+  echo $SERVICES
+  export MY_SERVICES="$SERVICES"
+else
+  export MY_SERVICES="$INPUTSERVICE"
+fi
+
+
+for SERVICE in $MY_SERVICES; do
+
 DATABASE=
 for SVC in $SERVICES_WITH_DB; do
     if [[ "$SERVICE" == "$SVC" ]]; then
@@ -64,6 +74,10 @@ for SVC in $SERVICES_WITH_DB; do
         DATABASE="-e DATABASE_URL=mysql+pymysql://$SERVICE:$PASSWORD@$DATABASE_SERVER/$SERVICE"
 
         source $INSTALL_PATH/.mysql_root_password
+        # caution this line causes sometimes the error: ERROR 1045 (28000): Access denied for user 'root'@'172.17.0.1' (using password: YES)
+        echo Inside db=$SERVICE: $VAR $PASSWORD $DATABASE
+
+        #grant all privileges on DBNAME.* to MYID@localhost identified by 'MYPW';
         MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -u root --protocol tcp <<EOF
 CREATE DATABASE IF NOT EXISTS $SERVICE;
 CREATE USER IF NOT EXISTS '$SERVICE'@'%' IDENTIFIED BY '$PASSWORD';
@@ -107,3 +121,5 @@ ID=$(docker run -d --restart always -P \
     microflack_$SERVICE:$TAG)
 docker rename $ID ${SERVICE}_${ID:0:12}
 echo $ID
+
+done
