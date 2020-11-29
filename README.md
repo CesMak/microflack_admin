@@ -4,7 +4,7 @@ A simple Chat App based on a flask highly scalable microservices architecture:
 
 ![chat_app](docu/01_overview.png)
 
-see also this [video](docu/mickroflack_2.0.mp4)
+see also this [video](mickroflack--.mp4)
 
 Overview of services:
 ![services_app](docu/02_services.png)
