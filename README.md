@@ -2,12 +2,12 @@ Microflack 2.0 developed by Markus Lamprecht (2020).
 
 A simple Chat App based on a flask highly scalable microservices architecture:
 
-![chat_app](docu/01_overview.png")
+![chat_app](docu/01_overview.png)
 
 see also this [video](docu/mickroflack_2.0.mp4)
 
 Overview of services:
-![services_app](docu/02_services.png")
+![services_app](docu/02_services.png)
 
 ## Related repros
 * Services: [ui](https://github.com/CesMak/microflack_ui), [users](https://github.com/CesMak/microflack_users), [messages](https://github.com/CesMak/microflack_messages), [socketio](https://github.com/CesMak/microflack_socketio), [tokens](https://github.com/CesMak/microflack_tokens)
@@ -16,12 +16,15 @@ Overview of services:
 ## Getting started
 Tested on Ubuntu 20.04, Python3
 0. Create a folder e.g. called idm
-1. Set alias: alias ss_idm='cd ~/Documents/06_Software_Projects/idm; export INSTALL_PATH=$PWD; pushd $INSTALL_PATH/; export PATH=$PATH:$PWD/microflack_admin/bin; cd microflack_admin; source mfvars'
+1. Set alias in your bashrc:
+```
+alias ss_idm='cd ~/Documents/06_Software_Projects/idm; export INSTALL_PATH=$PWD; pushd $INSTALL_PATH/; export PATH=$PATH:$PWD/microflack_admin/bin; cd microflack_admin; source mfvars'
+```
 2. download microflack_admin in /idm
 3. ss_idm
 4. ./setup-host.sh
 5. The following command should setup all on your local machine
-```bash
+```
 ./setup-all-in-one.sh
 ```
 
