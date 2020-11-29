@@ -1,0 +1,15 @@
+#!/bin/bash -e
+
+# This script builds Docker containers for the services.
+## Setup some Color
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+
+docker container start mysql
+docker container start redis
+docker container start etcd
+docker container start lb
+docker container start logspout
+./mfrun all

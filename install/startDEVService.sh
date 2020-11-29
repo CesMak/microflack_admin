@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 # source .profile
-# Description here:  ./startDEVService users
+# Description here:  ./startDEVService users|messages
 
 RED='\033[0;31m'
 NC='\033[0m' # No Color
@@ -17,6 +17,8 @@ if [[ "$PORT" == "" ]]; then
     PORT=5000
 fi
 
+cd ../bin
+#./mfkill $LOCALBUILDSERVICE
 
 cd $INSTALL_PATH/microflack_$LOCALBUILDSERVICE
 
@@ -28,8 +30,8 @@ echo -e "${BLUE}Do now mfdev start $LOCALBUILDSERVICE ${NC}"
 
 echo ''
 echo -e "${BLUE}Delete your local db (in case of column changes adding roomid)${NC}"
-rm migrations
-rm users.sqlite
+rm -rf migrations
+rm $LOCALBUILDSERVICE.sqlite
 flask db init
 flask db migrate -m "initial migration"
 flask db upgrade

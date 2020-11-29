@@ -1,5 +1,39 @@
+Microflack 2.0 developed by Markus Lamprecht (2020).
+
+A simple Chat App based on a flask highly scalable microservices architecture:
+
+![chat_app](docu/01_overview.png")
+
+see also this [video](docu/mickroflack_2.0.mp4)
+
+Overview of services:
+![services_app](docu/02_services.png")
+
+## Related repros
+* Services: [ui](https://github.com/CesMak/microflack_ui), [users](https://github.com/CesMak/microflack_users), [messages](https://github.com/CesMak/microflack_messages), [socketio](https://github.com/CesMak/microflack_socketio), [tokens](https://github.com/CesMak/microflack_tokens)
+* Other: [service-registry-etcd](https://github.com/CesMak/easy-lb-haproxy)
+
+## Getting started
+Tested on Ubuntu 20.04, Python3
+0. Create a folder e.g. called idm
+1. Set alias: alias ss_idm='cd ~/Documents/06_Software_Projects/idm; export INSTALL_PATH=$PWD; pushd $INSTALL_PATH/; export PATH=$PATH:$PWD/microflack_admin/bin; cd microflack_admin; source mfvars'
+2. download microflack_admin in /idm
+3. ss_idm
+4. ./setup-host.sh
+5. The following command should setup all on your local machine
+```bash
+./setup-all-in-one.sh
+```
+
+For more details see these videos by Miguel:
+* [mickroflack](https://www.youtube.com/watch?v=nrzLdMWTRMM)
+* [Flask at scale](https://www.youtube.com/watch?v=tdIIJuPh3SI)
+
 ## Done
-07.11.2020  changing betweeen https and local mode works with NOT USE command
+* 07.11.2020  changing betweeen https and local mode works with NOT USE command
+* 15.11.2020  workflow and understanding tokens
+* 17.11.2020  make a new tag! for wheels and install version5! (does not raise status!) --> solved Error: requests.exceptions.HTTPError: 401 Client Error: UNAUTHORIZED for url: http://192.168.178.26/api/users/me
+* 29.11.2020 stable version working (with sid)
 
 ## TODO
 * include rooms (locally on this pc)
@@ -9,19 +43,60 @@
 * solve db error (root localhost user)
 * test if contab works to renewe certificates inside docker?
 * test why not possible to run without internet connection (fully locally? cause works over network!)
+* redis container is completely empty? (docker exec -it redis sh)
+* is redis used at all?
+* TODO where are the db stored????!!
+* understand backbone.js -> https://backbonejs.org/#Getting-started
+
+## adding sid
+* required for individual server messages (to a specific client)
+* alternatively create a room with the nickname and simply join the user to 3 rooms
+* nickname room, sid room, roomid ?
+* for testing:
+* get current client user id (see backbone current user model)
+* send a server message to that user
+* see also hints at: https://github.com/miguelgrinberg/microflack_messages/issues/9
+
+## Database column adding
+- docker exec -it messages_311651440dd8 sh
+- with the classic ./rebuild messages the migration folder is not created!
+- use /install$ ./cleanAllDB.sh to delete messages and user db!
+- delete wheels and mysql-data-dir then do ./setup-all-in-one.sh (this will delete all db!!!)
+-> check if messages starts at all! if not migrations folder missing?
+-> delete messages image!
+* ./startDEVService messages
+* ./mfupgrade roll messages
+* ./mfrun messages
+* docker image ls
+* docker rmi <messages>
+* ./rebuild messages
+  + afterwards migrations folder should be there again
+  + docker exec -it messages_e333fb2b08e8 sh
 
 
-## References:
-https://www.youtube.com/watch?v=nrzLdMWTRMM 2:30 (intresting),  2:01 (users service - migration)
-https://www.youtube.com/watch?v=tdIIJuPh3SI -->  Flack at scale
+## Migrations
+* see: https://flask-migrate.readthedocs.io/en/latest/ Flask-Migrate uses Alembic
+  + flask db init adds migrations folder!
+* used for messages, users
+* service cannot create the db! (mysql)
+* db creation must be outside! (with admin pw happens in bash script!)
+* service can do the migration
 
-Set alias:
-alias ss_idm='cd ~/Documents/06_Software_Projects/idm; export INSTALL_PATH=$PWD; pushd $INSTALL_PATH/; export PATH=$PATH:$PWD/microflack_admin/bin; cd microflack_admin; source mfvars'
+## Make a new microflack_common tag
+* inside microflack_common->setup.py change to 0.5 (version) ! very important step!
+* git tag -l
+* git tag -a v0.5 -m "comment"
+* git push origin v0.5
+* inside microflack_common test it with: ./mkwheel all
+* or simply with
+```
+(inside microflack_common)
+git checkout v0.5
+pip wheel -e . --no-deps  #installs the version in the setup.py file!
+ls *.whl
+```
 
-* download microflack_admin in /idm
-* ss_idm
-* ./setup-host.sh
-* ./setup-all-in-one.sh
+
 
 # Install a service by hand
 *  2:25
@@ -84,6 +159,19 @@ dba27323222e        mysql:5.7                               "docker-entrypoint.s
 * simply check the users.sqllite file!
 * works now....
 
+## SPA's and CSR vs SSR
+* https://github.com/miguelgrinberg/microflack_ui/issues/6
+* https://www.youtube.com/watch?v=Y2spCNZDt84
+* Single Page App, Client Side rendering see https://dotcms.com/blog/post/spas-and-server-side-rendering-a-must-or-a-maybe
+* **I need to use SPA in js for javascript no forms etc.**
+* SSR=Server side rendering
+  + faster rendering the site (important if you want to load heavy js files)
+  + initial page load is faster
+  + great for static sites
+  + SEO = Search Enginge Optimization --> crawling is better
+  - Not good for sites that are very interactive!!!
+  - Non rich site interactions
+  - --> Do not use server side rendering!
 
 ## Testing the api:
 * go to: http://0.0.0.0/api/users
@@ -95,15 +183,7 @@ dba27323222e        mysql:5.7                               "docker-entrypoint.s
 * login (user service)   -> (token service gets request with username and pw -> asks user service if ok before gives out the token)  -> mark user as active (shows up on the right bar).
 * /api/users/me endpoint to validate username and password and return user information
 * register (POST) -> no token needed.
-* 
 
-## Migrations
-* see: https://flask-migrate.readthedocs.io/en/latest/ Flask-Migrate uses Alembic
-  + flask db init adds migrations folder!
-* used for messages, users
-* service cannot create the db! (mysql)
-* db creation must be outside! (with admin pw happens in bash script!)
-* service can do the migration
 
 ## Configure HAProxy for SSL/TLS HTTPS Certbot
 https://serversforhackers.com/c/using-ssl-certificates-with-haproxy
@@ -199,8 +279,55 @@ users_1bdc1fdc743f|sqlalchemy.exc.OperationalError: (pymysql.err.OperationalErro
 users_1bdc1fdc743f|(Background on this error at: http://sqlalche.me/e/13/e3q8)
 users_1bdc1fdc743f|USERS DB:  mysql+pymysql://users:lJPq89NCbm1K4Cpc@192.168.178.26:3306/users
 
-13.11.2020
-- this works: docker exec -it mysql mysql -u root -p
+## Delte mysql db from outside!!!
+```
+docker exec -it mysql mysql -u root -p
+#enter root mysql pw
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| messages           |
+| mysql              |
+| performance_schema |
+| sys                |
+| users              |
++--------------------+
+6 rows in set (0.00 sec)
+
+mysql> USE messages;
+mysql> SELECT COUNT(*) FROM messages;
++----------+
+| COUNT(*) |
++----------+
+|        0 |
++----------+
+1 row in set (0.00 sec)
+
+# check if column exists:
+mysql> SELECT sid FROM users;
+ERROR 1054 (42S22): Unknown column 'sid' in 'field list' #--> does not exist
+
+# adding a new column if not exists:
+DROP PROCEDURE IF EXISTS `?`;
+DELIMITER //
+CREATE PROCEDURE `?`()
+BEGIN
+  DECLARE CONTINUE HANDLER FOR SQLEXCEPTION BEGIN END;
+  ALTER TABLE users ADD COLUMN sid VARCHAR(255);
+END //
+DELIMITER ;
+CALL `?`();
+DROP PROCEDURE `?`;
+
+# Delete messages:
+mysql> USE messages;
+mysql> DELETE FROM messages
+    -> WHERE roomid=0;
+Query OK, 21 rows affected (0.03 sec)
+
+```
 
 - This must be in oneLINE::::: (inside mfrun otherwise access error!)
 MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -u root --protocol tcp <<EOF
@@ -476,6 +603,11 @@ with include /etc/nginx/sites-enabled/*;
 }
 ```
 
+# Error
+Do mfrun users
+Inside db=users: USERS_DB_PASSWORD fMz6bfgyrA8fyGUW -e DATABASE_URL=mysql+pymysql://users:fMz6bfgyrA8fyGUW@192.168.178.26:3306/users
+ERROR 2013 (HY000): Lost connection to MySQL server at 'reading initial communication packet', system error: 22
+--> solution ./mfrun users (just do it again)
 
 # Questions:
 * $(ip route get 1 | awk '{print $NF;exit}')

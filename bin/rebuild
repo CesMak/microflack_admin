@@ -1,13 +1,14 @@
 #!/bin/bash -e
 
 # This script is used to test the socketio server
+# does this also work for messages and users???
 SERVICE=$1
 
 source ../../.profile
 
 cd $INSTALL_PATH/microflack_admin/bin
 # uncomment if not running:
-#./mfkill $SERVICE
+./mfkill $SERVICE
 docker container ls
 
 cd $INSTALL_PATH/microflack_$SERVICE
