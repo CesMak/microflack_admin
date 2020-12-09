@@ -13,7 +13,7 @@ export PACKAGES="common"
 export SERVICES="ui users tokens messages socketio"
 
 # services that use a database
-export SERVICES_WITH_DB="users messages"
+export SERVICES_WITH_DB="users messages game"
 
 # let Flask know where the app is
 export FLASK_APP=app.py

@@ -11,7 +11,7 @@ Overview of services:
 
 ## Related repros
 * Services: [ui](https://github.com/CesMak/microflack_ui), [users](https://github.com/CesMak/microflack_users), [messages](https://github.com/CesMak/microflack_messages), [socketio](https://github.com/CesMak/microflack_socketio), [tokens](https://github.com/CesMak/microflack_tokens)
-* Other: [service-registry-etcd](https://github.com/CesMak/easy-lb-haproxy)
+* Other: [service-registry-etcd](https://github.com/CesMak/easy-lb-haproxy), [common-stuff](https://github.com/CesMak/microflack_common)
 
 ## Getting started
 Tested on Ubuntu 20.04, Python3
@@ -50,6 +50,55 @@ For more details see these videos by Miguel:
 * is redis used at all?
 * TODO where are the db stored????!!
 * understand backbone.js -> https://backbonejs.org/#Getting-started
+
+
+## Adding game service
+* option1: storing game_obj as pickle in string field
+* option2: storing whole state as fields
+
+### option2
+* create game from options in db
+* create game state from options in db use play until
+* minimize send data!
+
+### connection to DB required
+* todo install service and see if can connect to database
+* or install locally see messages.sqlite (how??! see miguel video?)
+* in mfvars game was added for service with database!
+
+### current = option1
+```
+options         = room_obj.getGameOptions("schafkopf")
+self.game_obj   = schafkopf(options)
+  -> inits schafkopf
+  # Specific for Schafkopf:
+  self.decl_options   = ["weg", "ruf_E", "ruf_G", "ruf_S", "wenz", "geier", "solo_E", "solo_G", "solo_H", "solo_S"] #
+  #self.solo_options   = []             # ["solo_e", "solo_g", "solo_h", "solo_s", "geier", "wenz"]
+  self.declarations   = []
+  self.phase          = "declaration"  # declaration, (contra, retour), playing
+  self.matching       = {"type": "ruf_G", "partner": 0}   # type: Ramsch, Solo, Hochzeit, Bettel, Ruf,
+  super().setup_game()       # is required here already for gym to work!
+  self.correct_moves     = 0
+
+  -> inits game
+  self.player_types      = options_dict["type"] # set here the player type RANDOM or RL (reinforcement player)
+  self.player_names      = options_dict["names"]
+  self.nu_cards          = options_dict["nu_cards"] #         #Number of cards color is given.
+  self.seed              = options_dict["seed"] # none for not using it
+  self.nu_players        = len(self.player_names)
+  self.current_round     = 0
+  self.nu_games_played   = 0
+  self.players           = []  # stores players object
+  self.on_table_cards    = []  # stores card on the table
+  self.active_player     = options_dict["active_player"]  # due to gym reset =3 stores which player is active (has to give a card)
+  self.played_cards      = []  # of one game # see also in players offhand!
+  self.gameOver          = 0
+  self.game_start_player = self.active_player
+  self.rewards           = np.zeros((self.nu_players,))
+  self.total_rewards     = np.zeros((self.nu_players,))
+  self.colors            = options_dict["colors"]
+  self.value_conversion  = options_dict["value_conversion"]  
+```
 
 ## adding sid
 * required for individual server messages (to a specific client)
